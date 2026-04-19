@@ -1,0 +1,20 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Temporary / backups
+__tmp_script.js
+index.inline.backup.html
+*_backup*
+
+# Local media (keep private; add your own after cloning)
+gallery/
+
+# Logs
+*.log
+
+# Optional: node/python tooling (not used here, but safe)
+node_modules/
+.venv/
+__pycache__/

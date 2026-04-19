@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Media Gallery</title>
+		<meta name="description" content="A simple website to view photos and videos in one place." />
+		<link rel="stylesheet" href="assets/styles.css" />
+		<!-- All styles are in assets/styles.css -->
+		<!-- (Inline CSS removed) -->
+	</head>
+	<body>
+		<div class="wrap">
+			<header>
+				<div class="title">
+					<h1>Media Gallery</h1>
+					<p>One simple website for your photos and videos — add files, browse, and view fullscreen.</p>
+				</div>
+				<div class="pill-row" role="group" aria-label="Filter media">
+					<button class="pill" type="button" data-filter="all" aria-pressed="true">All</button>
+					<button class="pill" type="button" data-filter="image" aria-pressed="false">Photos</button>
+					<button class="pill" type="button" data-filter="video" aria-pressed="false">Videos</button>
+				</div>
+			</header>
+
+			<div class="bar" style="margin-top: 0;">
+				<div class="pill-row" role="group" aria-label="Layout">
+					<button class="pill" type="button" data-layout="grid" aria-pressed="true">Grid</button>
+					<button class="pill" type="button" data-layout="masonry" aria-pressed="false">Masonry</button>
+					<button class="pill" type="button" data-layout="pattern" aria-pressed="false">Pattern</button>
+				</div>
+				<div class="controls" style="justify-content: flex-end;">
+					<div class="pill-row" role="group" aria-label="Card style">
+						<button class="pill" type="button" data-style="mixed" aria-pressed="true">Mixed</button>
+						<button class="pill" type="button" data-style="glass" aria-pressed="false">Glass</button>
+						<button class="pill" type="button" data-style="neon" aria-pressed="false">Neon</button>
+						<button class="pill" type="button" data-style="pastel" aria-pressed="false">Pastel</button>
+						<button class="pill" type="button" data-style="paper" aria-pressed="false">Paper</button>
+					</div>
+					<button class="btn" type="button" id="jumbleBtn" title="Jumble the Pattern layout">Jumble</button>
+					<button class="btn" type="button" id="shuffleBtn" title="Shuffle card styles">Shuffle</button>
+				</div>
+			</div>
+
+			<div class="bar">
+				<label>
+					<span class="sr-only">Search</span>
+					<input id="search" class="search" type="search" placeholder="Search by filename…" autocomplete="off" />
+				</label>
+				<div class="controls">
+					<input id="file" type="file" multiple accept="image/*,video/*" hidden />
+					<button class="btn primary" type="button" id="addBtn">Add photos/videos</button>
+					<button class="btn" type="button" id="slideshowBtn" title="Start slideshow from the first visible photo">Slideshow</button>
+					<button class="btn" type="button" id="demoBtn" title="Add a few demo items">Add demo</button>
+					<button class="btn danger" type="button" id="clearBtn" title="Remove all items">Clear</button>
+				</div>
+			</div>
+
+			<section id="drop" class="drop" aria-label="Upload area">
+				<div class="drop-row">
+					<div>
+						<div style="font-weight: 600;">Drop files here</div>
+						<div class="hint">Or click “Add photos/videos”. Supported: images + videos.</div>
+					</div>
+					<div class="hint">
+						Tips: <span class="kbd">Enter</span> open, <span class="kbd">←</span>/<span class="kbd">→</span> navigate, <span class="kbd">Esc</span> close
+					</div>
+				</div>
+				<div id="empty" class="empty" hidden>
+					No media yet. Add photos/videos to start building your gallery.
+				</div>
+				<div id="grid" class="grid" aria-label="Media items"></div>
+			</section>
+		</div>
+
+		<dialog id="viewer">
+			<div class="viewer" role="document" aria-label="Media viewer">
+				<div class="viewer-top">
+					<div class="viewer-title">
+						<strong id="viewerName">—</strong>
+						<span id="viewerSub">—</span>
+					</div>
+					<div class="viewer-actions">
+						<button class="btn primary" type="button" id="playBtn" title="Play/Pause slideshow (P)">Play</button>
+						<input id="musicFile" type="file" accept="audio/*" hidden />
+						<button class="btn" type="button" id="musicBtn" title="Choose background music">Music</button>
+						<button class="btn" type="button" id="musicToggleBtn" title="Toggle music (M)" disabled>Music Off</button>
+						<label class="sr-only" for="musicVol">Music volume</label>
+						<input id="musicVol" class="range" type="range" min="0" max="1" step="0.01" value="0.6" title="Music volume" disabled />
+						<label class="sr-only" for="speedSelect">Speed</label>
+						<select id="speedSelect" class="select" title="Slideshow speed">
+							<option value="2000">2s</option>
+							<option value="3000" selected>3s</option>
+							<option value="5000">5s</option>
+							<option value="8000">8s</option>
+						</select>
+						<label class="sr-only" for="layoutSelect">Layout</label>
+						<select id="layoutSelect" class="select" title="Slideshow layout">
+							<option value="single">Single</option>
+							<option value="smart" selected>Auto Mixed</option>
+							<option value="cycle">1 → 2 → Many</option>
+							<option value="two">Two</option>
+							<option value="many">Many</option>
+						</select>
+						<label class="sr-only" for="effectSelect">Effect</label>
+						<select id="effectSelect" class="select" title="Transition effect">
+							<option value="auto" selected>Auto (Different each slide)</option>
+							<option value="morph">Morph</option>
+							<option value="fade">Fade</option>
+							<option value="push">Push</option>
+							<option value="wipe">Wipe</option>
+							<option value="zoom">Zoom</option>
+							<option value="cover">Cover</option>
+						</select>
+						<button class="btn" type="button" id="downloadBtn" title="Download this file">Download</button>
+						<button class="btn" type="button" id="closeBtn" title="Close (Esc)">Close</button>
+					</div>
+				</div>
+				<div class="viewer-body" id="viewerBody"></div>
+				<div class="viewer-nav">
+					<button class="btn" type="button" id="prevBtn" title="Previous (Left Arrow)">Prev</button>
+					<div class="hint">Use <span class="kbd">←</span> / <span class="kbd">→</span> to navigate</div>
+					<button class="btn" type="button" id="nextBtn" title="Next (Right Arrow)">Next</button>
+				</div>
+			</div>
+			<audio id="bgAudio" preload="none" loop></audio>
+		</dialog>
+
+		<script src="assets/app.js"></script>
+	</body>
+</html>
