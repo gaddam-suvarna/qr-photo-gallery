@@ -456,8 +456,36 @@
 				render();
 			}
 
+			function isBlobUrl(url) {
+				return typeof url === 'string' && url.startsWith('blob:');
+			}
+
+			function revokeIfBlob(url) {
+				if (!isBlobUrl(url)) return;
+				try { URL.revokeObjectURL(url); } catch { /* noop */ }
+			}
+
+			function addRemoteItems(items) {
+				const accepted = [];
+				for (const it of Array.from(items || [])) {
+					if (!it || !it.url) continue;
+					const kind = it.kind === 'video' ? 'video' : 'image';
+					accepted.push({
+						id: uid(),
+						kind,
+						name: it.name || 'Photo',
+						size: Number(it.size) || 0,
+						type: it.type || '',
+						url: it.url,
+						style: pickStyle(),
+					});
+				}
+				if (!accepted.length) return;
+				state.items.unshift(...accepted);
+			}
+
 			function clearAll() {
-				for (const item of state.items) URL.revokeObjectURL(item.url);
+				for (const item of state.items) revokeIfBlob(item.url);
 				state.items = [];
 				state.activeId = null;
 				render();
@@ -468,7 +496,7 @@
 				const idx = state.items.findIndex((x) => x.id === id);
 				if (idx === -1) return;
 				const [removed] = state.items.splice(idx, 1);
-				URL.revokeObjectURL(removed.url);
+				revokeIfBlob(removed.url);
 				if (state.activeId === id) {
 					closeViewer();
 				}
@@ -789,11 +817,23 @@
 
 			function setMusicFromFile(file) {
 				if (!file) return;
-				if (state.music.objectUrl) URL.revokeObjectURL(state.music.objectUrl);
+				revokeIfBlob(state.music.objectUrl);
 				const url = URL.createObjectURL(file);
 				state.music.objectUrl = url;
 				state.music.enabled = true;
 				state.music.name = file.name || 'Music';
+				el.bgAudio.src = url;
+				el.bgAudio.loop = true;
+				el.bgAudio.volume = Math.max(0, Math.min(1, state.music.volume || 0.6));
+				updateMusicUi();
+			}
+
+			function setMusicFromUrl(url, name) {
+				if (!url) return;
+				revokeIfBlob(state.music.objectUrl);
+				state.music.objectUrl = url;
+				state.music.enabled = true;
+				state.music.name = name || 'Music';
 				el.bgAudio.src = url;
 				el.bgAudio.loop = true;
 				el.bgAudio.volume = Math.max(0, Math.min(1, state.music.volume || 0.6));
@@ -806,13 +846,17 @@
 				el.bgAudio.volume = Math.max(0, Math.min(1, state.music.volume || 0.6));
 				el.bgAudio.play().then(updateMusicUi).catch(() => {
 					// Autoplay can be blocked until a user gesture.
+					state.music.needsGesture = true;
 					updateMusicUi();
+					showAudioNudge();
 				});
 			}
 
 			function pauseMusic() {
 				if (!el.bgAudio) return;
 				if (!el.bgAudio.paused) el.bgAudio.pause();
+				state.music.needsGesture = false;
+				hideAudioNudge();
 				updateMusicUi();
 			}
 
@@ -820,6 +864,107 @@
 				if (!state.music.objectUrl) return;
 				if (el.bgAudio.paused) tryPlayMusic();
 				else pauseMusic();
+			}
+
+			function ensureAudioNudgeEl() {
+				let nudge = document.querySelector('.audio-nudge');
+				if (nudge) return nudge;
+				nudge = document.createElement('div');
+				nudge.className = 'audio-nudge';
+				nudge.innerHTML = `
+					<div>
+						<strong>Sound is blocked</strong>
+						<div class="muted">Tap “Enable sound” once.</div>
+					</div>
+					<button type="button" id="enableSoundBtn">Enable sound</button>
+				`;
+				document.body.appendChild(nudge);
+				const btn = nudge.querySelector('#enableSoundBtn');
+				if (btn) btn.addEventListener('click', () => {
+					state.music.needsGesture = false;
+					hideAudioNudge();
+					tryPlayMusic();
+				});
+				return nudge;
+			}
+
+			function showAudioNudge() {
+				const nudge = ensureAudioNudgeEl();
+				nudge.classList.add('show');
+			}
+
+			function hideAudioNudge() {
+				const nudge = document.querySelector('.audio-nudge');
+				if (nudge) nudge.classList.remove('show');
+			}
+
+			function setShowcaseMode(on) {
+				document.body.classList.toggle('showcase-mode', Boolean(on));
+			}
+
+			function encodeGalleryUrl(file) {
+				// Encode only the filename portion (handles spaces / unicode safely)
+				// IMPORTANT: return an absolute URL so CSS `url(...)` in assets/styles.css
+				// does not resolve relative to /assets/.
+				const rel = `gallery/${encodeURIComponent(String(file || ''))}`;
+				return new URL(rel, document.baseURI).href;
+			}
+
+			async function loadGalleryManifest() {
+				try {
+					const res = await fetch('gallery/manifest.json', { cache: 'no-store' });
+					if (!res.ok) return null;
+					return await res.json();
+				} catch {
+					return null;
+				}
+			}
+
+			async function bootShowcaseFromManifest() {
+				const manifest = await loadGalleryManifest();
+				if (!manifest || !Array.isArray(manifest.items) || manifest.items.length === 0) return false;
+
+				if (manifest.showcaseMode) setShowcaseMode(true);
+
+				// Build remote items
+				const remoteItems = manifest.items.map((it) => {
+					const file = it.file || it.name;
+					const baseUrl = it.url || encodeGalleryUrl(file);
+					const absUrl = new URL(String(baseUrl || ''), document.baseURI).href;
+					return {
+						kind: it.kind || 'image',
+						name: it.name || file,
+						url: absUrl,
+					};
+				});
+				addRemoteItems(remoteItems);
+
+				// Music
+				if (manifest.music && (manifest.music.url || manifest.music.file)) {
+					if (Number.isFinite(manifest.music.volume)) state.music.volume = Number(manifest.music.volume);
+					state.music.enabled = manifest.music.enabled !== false;
+					const baseMusicUrl = manifest.music.url || encodeGalleryUrl(manifest.music.file);
+					const musicUrl = new URL(String(baseMusicUrl || ''), document.baseURI).href;
+					setMusicFromUrl(musicUrl, manifest.music.name || manifest.music.file);
+				}
+
+				render();
+
+				if (manifest.autostart) {
+					const photos = getVisiblePhotos();
+					if (photos.length) {
+						try {
+							openViewer(photos[0].id);
+							startSlideshow();
+							// Try music after starting slideshow
+							tryPlayMusic();
+						} catch {
+							// If the browser blocks dialog open without gesture, gallery still renders.
+						}
+					}
+				}
+
+				return true;
 			}
 
 			function stopSlideshow() {
@@ -1150,4 +1295,6 @@
 			updatePlayUi();
 			updateMusicUi();
 			render();
+			// Auto-load your GitHub gallery (no user upload needed)
+			bootShowcaseFromManifest();
 		

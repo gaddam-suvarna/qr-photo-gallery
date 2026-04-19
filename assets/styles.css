@@ -34,6 +34,47 @@
 				padding: 24px 0 40px;
 			}
 
+			body.showcase-mode #addBtn,
+			body.showcase-mode #demoBtn,
+			body.showcase-mode #clearBtn,
+			body.showcase-mode #file {
+				display: none !important;
+			}
+			body.showcase-mode #drop .drop-row {
+				display: none;
+			}
+
+			.audio-nudge {
+				position: fixed;
+				left: 12px;
+				right: 12px;
+				bottom: 12px;
+				z-index: 10000;
+				display: none;
+				align-items: center;
+				justify-content: space-between;
+				gap: 10px;
+				padding: 10px 12px;
+				border-radius: 14px;
+				border: 1px solid rgba(255, 255, 255, 0.14);
+				background: rgba(0, 0, 0, 0.55);
+				backdrop-filter: blur(10px);
+				box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+			}
+			.audio-nudge.show { display: flex; }
+			.audio-nudge strong { font-weight: 700; }
+			.audio-nudge .muted { color: rgba(255, 255, 255, 0.75); font-size: 13px; }
+			.audio-nudge button {
+				appearance: none;
+				border: 1px solid rgba(255, 255, 255, 0.18);
+				background: rgba(255, 255, 255, 0.08);
+				color: rgba(255, 255, 255, 0.92);
+				border-radius: 12px;
+				padding: 9px 12px;
+				cursor: pointer;
+			}
+			.audio-nudge button:hover { background: rgba(255, 255, 255, 0.12); }
+
 			header {
 				display: flex;
 				align-items: flex-start;
