@@ -465,6 +465,16 @@
 				try { URL.revokeObjectURL(url); } catch { /* noop */ }
 			}
 
+			function toAbsoluteUrl(url) {
+				if (typeof url !== 'string' || !url) return '';
+				if (isBlobUrl(url) || url.startsWith('data:')) return url;
+				try {
+					return new URL(url, document.baseURI).href;
+				} catch {
+					return url;
+				}
+			}
+
 			function addRemoteItems(items) {
 				const accepted = [];
 				for (const it of Array.from(items || [])) {
@@ -476,7 +486,7 @@
 						name: it.name || 'Photo',
 						size: Number(it.size) || 0,
 						type: it.type || '',
-						url: it.url,
+						url: toAbsoluteUrl(it.url),
 						style: pickStyle(),
 					});
 				}
@@ -683,7 +693,13 @@
 				el.prevBtn.disabled = idx <= 0;
 				el.nextBtn.disabled = idx === -1 || idx >= visible.length - 1;
 
-				if (!el.viewer.open) el.viewer.showModal();
+				const isOpen = Boolean(el.viewer.open || el.viewer.hasAttribute('open'));
+				if (!isOpen) {
+					// Some browsers/webviews don't fully support <dialog>.showModal().
+					if (typeof el.viewer.showModal === 'function') el.viewer.showModal();
+					else if (typeof el.viewer.show === 'function') el.viewer.show();
+					else el.viewer.setAttribute('open', '');
+				}
 			}
 
 			function initSlideshowCursorFromActive(photos) {
@@ -758,13 +774,14 @@
 					collage.className = 'viewer-collage';
 					collage.dataset.layout = pickCollageLayoutKey(group.length);
 					for (const photo of group) {
+						const absUrl = toAbsoluteUrl(photo.url);
 						const tile = document.createElement('div');
 						tile.className = 'tile';
-						tile.style.setProperty('--tile-bg', `url("${photo.url}")`);
+						tile.style.setProperty('--tile-bg', `url("${absUrl}")`);
 
 						const img = document.createElement('img');
 						img.className = 'tile-media';
-						img.src = photo.url;
+						img.src = absUrl;
 						img.alt = photo.name;
 						img.loading = 'eager';
 						img.decoding = 'async';
