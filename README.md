@@ -5,8 +5,15 @@ A simple single-page media gallery for photos/videos with an automatic slideshow
 ## Run
 Open `index.html` in your browser.
 
-## Privacy note
-This repo ignores `gallery/` by default so your personal photos/audio don't get uploaded to GitHub. Use the UI to add your own files after cloning.
+## Live demo (GitHub Pages)
+After enabling GitHub Pages for this repository, open:
+
+https://gaddam-suvarna.github.io/qr-photo-gallery/
+
+Enable Pages (one-time): Repo → **Settings** → **Pages** → **Deploy from a branch** → Branch: `main` → Folder: `/(root)` → **Save**.
+
+## Note
+This repo currently includes the `gallery/` folder (photos/audio). If you want it private, make the repo **Private** or remove `gallery/` from Git history and add it back to `.gitignore`.
 
 ## Files
 - `index.html` — HTML markup only
