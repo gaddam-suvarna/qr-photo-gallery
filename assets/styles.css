@@ -38,8 +38,7 @@
 				Showcase mode is meant for a “preloaded gallery” experience,
 				but we still keep uploads enabled so end-users can add their own media.
 			*/
-			body.showcase-mode #demoBtn,
-			body.showcase-mode #clearBtn {
+			body.showcase-mode #demoBtn {
 				display: none !important;
 			}
 

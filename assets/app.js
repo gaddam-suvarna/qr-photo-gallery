@@ -1317,10 +1317,11 @@
 			updatePlayUi();
 			updateMusicUi();
 			render();
-			// Upload-only by default:
-			// Bundled /gallery items load ONLY if the URL explicitly requests it.
-			// Example: https://site/?showcase=1
+			// Default behavior:
+			// 1) Show your preloaded gallery on first open
+			// 2) Still allow users to upload their own photos/videos
+			// If you need an "empty start" link, use ?empty=1
 			const qs = new URLSearchParams(window.location.search || '');
-			const wantShowcase = qs.get('showcase') === '1' || qs.get('gallery') === '1';
-			if (wantShowcase) bootShowcaseFromManifest();
+			const forceEmpty = qs.get('empty') === '1' || qs.get('uploadOnly') === '1';
+			if (!forceEmpty) bootShowcaseFromManifest();
 		

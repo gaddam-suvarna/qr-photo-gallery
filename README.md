@@ -18,12 +18,14 @@ This repo currently includes the `gallery/` folder (photos/audio). If you want i
 ## User uploads
 - Users can upload their own photos/videos using **Add photos/videos** or drag-and-drop.
 - This is a static site (no backend), so uploaded files are not saved to the server; refreshing the page may reset the gallery.
-- If you want the site to start empty for everyone (recommended for a QR share link), keep `gallery/manifest.json` with `"items": []`.
-- For privacy, also delete your personal files from `gallery/` before pushing to GitHub.
+- By default the page can also preload items from `gallery/manifest.json` (so your photos show first) while still allowing uploads.
+- If you want an "empty start" link (no preloaded items), open: `/?empty=1`
+
+## Privacy note
+If you push personal photos inside `gallery/` to GitHub, they can be accessed by direct URL even if you don't preload them. Remove those files from `gallery/` if you want them private.
 
 ### Showcase (optional)
-If you ever want to preload the bundled `gallery/` items again, open the page with `?showcase=1`.
-Example: `https://<your-site>/?showcase=1`
+If you want to force an empty start from the same site, use `?empty=1`.
 
 ## Files
 - `index.html` — HTML markup only
