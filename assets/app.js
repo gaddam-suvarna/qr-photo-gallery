@@ -939,7 +939,12 @@
 
 			async function bootShowcaseFromManifest() {
 				const manifest = await loadGalleryManifest();
-				if (!manifest || !Array.isArray(manifest.items) || manifest.items.length === 0) return false;
+				if (!manifest) return false;
+				// IMPORTANT:
+				// Only preload the bundled /gallery items when explicitly in showcase mode.
+				// This keeps the public QR link "empty by default" so each user can upload their own media.
+				if (manifest.showcaseMode !== true) return false;
+				if (!Array.isArray(manifest.items) || manifest.items.length === 0) return false;
 
 				if (manifest.showcaseMode) setShowcaseMode(true);
 
@@ -1312,6 +1317,10 @@
 			updatePlayUi();
 			updateMusicUi();
 			render();
-			// Auto-load your GitHub gallery (no user upload needed)
-			bootShowcaseFromManifest();
+			// Upload-only by default:
+			// Bundled /gallery items load ONLY if the URL explicitly requests it.
+			// Example: https://site/?showcase=1
+			const qs = new URLSearchParams(window.location.search || '');
+			const wantShowcase = qs.get('showcase') === '1' || qs.get('gallery') === '1';
+			if (wantShowcase) bootShowcaseFromManifest();
 		

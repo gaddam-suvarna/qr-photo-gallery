@@ -15,6 +15,16 @@ Enable Pages (one-time): Repo → **Settings** → **Pages** → **Deploy from a
 ## Note
 This repo currently includes the `gallery/` folder (photos/audio). If you want it private, make the repo **Private** or remove `gallery/` from Git history and add it back to `.gitignore`.
 
+## User uploads
+- Users can upload their own photos/videos using **Add photos/videos** or drag-and-drop.
+- This is a static site (no backend), so uploaded files are not saved to the server; refreshing the page may reset the gallery.
+- If you want the site to start empty for everyone (recommended for a QR share link), keep `gallery/manifest.json` with `"items": []`.
+- For privacy, also delete your personal files from `gallery/` before pushing to GitHub.
+
+### Showcase (optional)
+If you ever want to preload the bundled `gallery/` items again, open the page with `?showcase=1`.
+Example: `https://<your-site>/?showcase=1`
+
 ## Files
 - `index.html` — HTML markup only
 - `assets/styles.css` — styling

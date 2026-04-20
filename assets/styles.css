@@ -34,14 +34,13 @@
 				padding: 24px 0 40px;
 			}
 
-			body.showcase-mode #addBtn,
+			/*
+				Showcase mode is meant for a “preloaded gallery” experience,
+				but we still keep uploads enabled so end-users can add their own media.
+			*/
 			body.showcase-mode #demoBtn,
-			body.showcase-mode #clearBtn,
-			body.showcase-mode #file {
+			body.showcase-mode #clearBtn {
 				display: none !important;
-			}
-			body.showcase-mode #drop .drop-row {
-				display: none;
 			}
 
 			.audio-nudge {
